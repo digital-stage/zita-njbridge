@@ -35,11 +35,11 @@ jobs:
     - name: Install dependencies
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo apt update
+              sudo apt update &&
               sudo apt install --assume-yes libjack-jackd2-dev
          elif [ "$RUNNER_OS" == "Windows" ]; then
               choco install jack
-              cd c:\Program Files (x86)\Jack\64bits\
+              cd "c:\Program Files (x86)\Jack\64bits\""
               regsvr32 JackRouter.dll
          elif [ "$RUNNER_OS" == "macOS" ]; then
               brew install pkgconfig jack
