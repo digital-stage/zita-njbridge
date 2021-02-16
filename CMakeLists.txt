@@ -45,7 +45,7 @@ target_link_libraries(zita-j2n
 )
 target_include_directories(zita-n2j
     PUBLIC
-    zita-resampler::zita-resampler
+    zita-resampler/source
     ${JACK_INCLUDE_DIRS}
 )
 target_link_libraries(zita-n2j
