@@ -39,6 +39,8 @@ jobs:
               sudo apt install --assume-yes libjack-jackd2-dev
          elif [ "$RUNNER_OS" == "Windows" ]; then
               choco install jack
+              ls "C:\\Program Files\\"
+              ls "C:\\Program Files\\Jack"
               cd "C:\\Program Files\\Jack\\32bits\\"
               regsvr32 JackRouter.dll
          elif [ "$RUNNER_OS" == "macOS" ]; then
