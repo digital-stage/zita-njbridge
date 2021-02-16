@@ -24,13 +24,14 @@
 #include <signal.h>
 #include <getopt.h>
 #include <math.h>
-#include <sys/mman.h>
 #include "jacktx.h"
 #include "nettx.h"
 #include "lfqueue.h"
 #include "netdata.h"
 #include "zsockets.h"
-
+#ifndef _WIN32
+    #include <sys/mman.h>
+#endif
 
 #define APPNAME "zita-j2n"
 
@@ -230,10 +231,12 @@ int main (int ac, char *av [])
     }
     A.set_port (port_arg);
 
+#ifndef _WIN32
     if (mlockall (MCL_CURRENT | MCL_FUTURE))
     {
         fprintf (stderr, "Warning: memory lock failed.\n");
     }
+#endif
 
     jacktx = new Jacktx (name_arg, serv_arg, chan_arg);
     nettx  = new Nettx;
