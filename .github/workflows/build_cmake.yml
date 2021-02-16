@@ -26,6 +26,7 @@ jobs:
             build_type: "Release", cc: "clang", cxx: "clang++"
           }
 
+    steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v2
       with:
