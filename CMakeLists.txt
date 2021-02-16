@@ -42,6 +42,7 @@ target_include_directories(zita-j2n
 target_link_libraries(zita-j2n
     PUBLIC
     ${JACK_LIBRARIES}
+    pthread
 )
 target_include_directories(zita-n2j
     PUBLIC
@@ -52,6 +53,7 @@ target_link_libraries(zita-n2j
     PUBLIC
     zita-resampler::zita-resampler
     ${JACK_LIBRARIES}
+    pthread
 )
 
 install(TARGETS zita-j2n zita-n2j DESTINATION bin)
