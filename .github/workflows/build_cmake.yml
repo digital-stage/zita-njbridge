@@ -26,8 +26,10 @@ jobs:
             build_type: "Release", cc: "clang", cxx: "clang++"
           }
 
-    steps:
-    - uses: actions/checkout@v1
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
