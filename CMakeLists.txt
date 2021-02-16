@@ -38,7 +38,7 @@ add_executable( zita-j2n ${CMAKE_CURRENT_SOURCE_DIR}/source/zita-j2n.cc ${J2N_SO
 add_executable( zita-n2j ${CMAKE_CURRENT_SOURCE_DIR}/source/zita-n2j.cc ${N2J_SOURCES} )
 target_include_directories(zita-j2n
     PUBLIC
-    zita-resampler
+    zita-resampler/source
     ${JACK_INCLUDE_DIRS}
 )
 target_link_libraries(zita-j2n
