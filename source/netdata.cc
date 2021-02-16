@@ -19,9 +19,9 @@
 
 
 #ifdef __APPLE__
-#include <machine/endian.h>
-#else
-#include <endian.h>
+    #include <machine/endian.h>
+#elif __linux__
+    #include <endian.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
