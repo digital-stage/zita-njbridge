@@ -1,0 +1,213 @@
+.TH ZITA-NJBRIDGE "1" "July 2014"
+.SH NAME
+zita-j2n, zita-n2j \- Jack clients to transport multichannel audio over a local network.
+
+.SH SYNOPSIS
+.B zita-j2n
+.I [ options ] ip-address ip-port 
+.br
+.B zita-n2j
+.I [ options ] ip-address ip-port 
+.br
+.B zita-j2n
+.I [ options ] ip-address ip-port interface
+.br
+.B zita-n2j
+.I [ options ] ip-address ip-port interface
+
+.SH DESCRIPTION
+.SS General
+The zita-j2n (sender) and zita-n2j (receiver) applications allow
+to exchange up to 64 channels of full-quality uncompressed audio
+streams between two or more systems running the Jack audio server. 
+Sender and receiver(s) can each have their own sample rate and period
+size, and no word clock sync between them is assumed. The receiver
+uses adaptive resampling to convert the audio stream(s) to its local
+sample rate.
+.PP
+There is no master/slave relationship between sender and receiver(s).
+This is an explicit design goal. In all respects the net result of using
+zita-njbridge is similar to having analog audio connections between
+the sound cards of the systems using it. Nothing a sender can do will
+affect the receiver(s), apart from the audio signals being available
+or reverting to silence if there is no sender. Xruns or skipped cycles
+will not affect the synchronisation or resampling. Jack freewheeling on
+either end will temporarily suspend operation.
+.PP
+Zita-njbridge can be used in two ways: one-to-one, or one-to-many.
+Both IPv4 and IPv6 are supported.
+.PP 
+For a one-to-one setup the first form of the commands shown above should
+be used. The protocol used is UDP and the ip-address argument required
+for both sender and receiver is that of the receiver. A host name can be
+used instead of a numerical IP adresses, this will be looked up using
+getaddrinfo().
+.PP
+For a one-to-many setup the second form must be used The ip-address 
+argument should be a valid multicast address, and the mandatory interface
+argument selects the network interface to be used.
+
+.SS Resampler filter length.
+The receiver uses the zita-resampler library to resample signals to its
+local rate. The length of the multiphase low-pass filter used as part
+of the resampling algorithm determines the audio bandwidth, and adds to
+latency. It can also have a significant impact on CPU load if many channels
+are received.
+.PP
+Zita-njbridge will select a filter length based on the lower of the
+sender and receiver sample rates. For sample rates of 44.1 Khz and
+above the value chosen will result in an attenuation of no more than
+0.1 dB up to 20 kHz. The --filt option allows to override the automatic
+configuration, but this will normally not be necessary. 
+
+.SS Latency issues.
+When connecting two Jack systems with unsynchronised periods
+the minimum additional latency under worst case conditions is
+the sum of the two period times. Additional latency means any
+latency required to make the connection work without interruption.
+The round-trip latency from an ideal (zero excess latency) analog
+input on the sender to an ideal (idem) analog output on the receiver
+will be twice this value. Worst case conditions means that the both
+sender and receiver can run at arbitrary times within their respective
+periods.
+.PP
+Zita-njbridge is designed to provide a defined and constant additional
+latency. The target value is the sum of the two periods, plus resampling
+delay, plus any extra buffering specified by the user. The actual latency
+will be this value plus the average network delay. The latter is
+unknown so there is no way to compensate for it. This would be
+possible using either a return channel, or some way to sync clocks
+on the two systems which could then be used to measure the average
+network delay. The current release of zita-njbridge does not provide
+this as it is meant for use on a local network. A dedicated or lightly
+loaded gigabit Ethernet can provide typical network delays well below
+a millisecond.
+.PP
+The --buff option of zita-n2j adds the specified number of milliseconds
+to the target latency. The default value is 10 ms which is more than
+enough on a moderately loaded Gigabit local network. This can be set to
+zero, for example when it is known that the sender will always run near
+the start of its Jack period and the network delay jitter is less than
+this period. 
+.PP
+If there is any network delay jitter above 10ms, increasing the extra
+buffer time will be necessary to avoid occasional interruption of the
+received audio streams.
+.PP
+The latency does not depend on the when exactly the sender runs within
+its Jack period. This is similar to playback to a soundcard: when the
+playback samples are written well before they are due this does not
+decrease the latency, the data is just buffered until the end of the
+period. In the case of zita-njbridge the remaining time is available
+for network delay. This is why, when the sender is only lightly loaded
+and network delay is small, it is possible to use --buff 0 at the receivers.
+
+.SS Use on wide area or wireless networks.
+The current implementation is designed to be used on local networks that
+provide more or less reliable delivery of packets, with low or moderate
+delay. Occasional lost packets will not impact the synchronisation or
+resampling, but any samples arriving out of order will be ignored (they
+will have been replaced by silence before). Extra buffering (using the
+--buff option) will allow an uninterrupted signal in the presence of 
+delay jitter, at the price of additional latency. Zita-njbridge may be
+usable on long distance internet connections, but keep in mind it was
+not designed for this.
+.PP
+Performance on wireless networks is purely a matter of chance. Again
+zita-njbridge is not designed for such use. 
+
+.SH OPTIONS
+
+.SS Common options
+
+.TP
+.BR --help
+.br
+Print command line and options summary.
+
+.TP
+.BI --jname \ name
+.br
+Select the Jack client client name. Default
+is 'zita-j2n' or 'zita-n2j'.
+
+.TP
+.BI --jserv \ server
+.br
+Select the Jack server to connect to.
+
+.SS zita-j2n options
+
+.TP
+.BI --chan \ channels
+.br
+The number of channels to transmit, the default is 2 channels.
+
+.TP
+.B --16bit
+.br
+Send audio as 16-bit signed integer samples.
+
+.TP
+.B --24bit
+.br
+Send audio as 24-bit signed integer samples. This is the default format.
+
+.TP
+.B --float
+.br
+Send audio as 32-bit floating point samples (Jack's internal
+format).
+
+.TP
+.BI --mtu \ MTU
+.br
+Inform zita-j2n of the path MTU, allowing it to use packets up to
+that size. The default value is 1500. Note that large MTU values
+on a shared network may increase network delay jitter. 
+
+.TP
+.BI --hops \ hops
+.br
+Set the maximum number of hops for multicast packets.
+Defaults to one, i.e. multicast is to the local net
+only.
+
+.SS zita-n2j options
+
+.TP
+.BI --chan \ list
+.br
+A list of channels numbers in ascending order and separated
+by comma or dash characters, the latter indicating a range.
+Channel numbers start at 1. Only the requested channels will
+be resampled and have a corresponding Jack port. Channels not
+provided by the sender will output silence. The default
+channel list is '1,2'.
+
+.TP
+.BI --buff \ time
+.br
+Increase the target latency by the given time, in milliseconds.
+The default is 10 ms. See the description above for what exactly
+this means.
+
+.TP
+.BI --filt \ delay
+.br
+Set the resampler filter delay, in samples at the lower of the
+two sample rates, in the range 16..96. See above for details.
+
+.TP
+.B --info
+.br
+Print additional diagnostic information. Three values will
+be printed twice per second: The average resampler control
+loop error in frames, the resampler ratio correction factor,
+and the minumum number of frames available in the receive buffer.
+
+
+.SH "AUTHOR"
+zita-j2n, zita-n2j and this manual page were written
+by Fons Adriaensen <fons@linuxaudio.org>.
+

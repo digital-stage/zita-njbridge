@@ -1,0 +1,3 @@
+[submodule "zita-resampler"]
+	path = zita-resampler
+	url = https://github.com/digital-stage/zita-resampler
