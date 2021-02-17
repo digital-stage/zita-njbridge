@@ -120,8 +120,7 @@ jobs:
               -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
               -G Ninja
               -D CMAKE_MAKE_PROGRAM=${ninja_program}
-              -D JACK_LIBRARIES="C:/Program Files (x86)/JACK2/lib"
-              -D JACK_INCLUDE_DIRS="C:/Program Files (x86)/JACK2/include"
+              -D CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
             RESULT_VARIABLE result
           )
         else()
