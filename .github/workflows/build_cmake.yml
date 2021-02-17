@@ -38,7 +38,8 @@ jobs:
               sudo apt update &&
               sudo apt install --assume-yes libjack-jackd2-dev
          elif [ "$RUNNER_OS" == "Windows" ]; then
-              choco install pkgconfiglite jack
+              choco install pkgconfiglite
+              vcpkg install jack2
          elif [ "$RUNNER_OS" == "macOS" ]; then
               brew install pkgconfig jack
          else
@@ -111,15 +112,29 @@ jobs:
 
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
-            -S .
-            -B build
-            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
-            -G Ninja
-            -D CMAKE_MAKE_PROGRAM=${ninja_program}
-          RESULT_VARIABLE result
-        )
+        if ("${{ runner.os }}" STREQUAL "Windows")
+          execute_process(
+            COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
+              -S .
+              -B build
+              -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+              -G Ninja
+              -D CMAKE_MAKE_PROGRAM=${ninja_program}
+              -D JACK_LIBRARIES="C:\Program Files (x86)\JACK2\lib"
+              -D JACK_INCLUDE_DIRS="C:\Program Files (x86)\JACK2\include"
+            RESULT_VARIABLE result
+          )
+        else()
+          execute_process(
+            COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
+              -S .
+              -B build
+              -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+              -G Ninja
+              -D CMAKE_MAKE_PROGRAM=${ninja_program}
+            RESULT_VARIABLE result
+          )
+        endif()
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
