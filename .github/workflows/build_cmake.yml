@@ -120,7 +120,7 @@ jobs:
               -G Ninja
               -D CMAKE_MAKE_PROGRAM=${ninja_program}
               -D CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
-              -D JACK_LIBRARIES="C:/Program Files (x86)/Jack/lib"
+              -D JACK_LIBRARIES="C:/Program Files (x86)/Jack/lib/libjack.dll"
               -D JACK_INCLUDE_DIRS="C:/Program Files (x86)/Jack/include"
             RESULT_VARIABLE result
           )
