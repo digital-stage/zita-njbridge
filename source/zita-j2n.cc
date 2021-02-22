@@ -231,7 +231,7 @@ int main (int ac, char *av [])
     }
     A.set_port (port_arg);
 
-#ifndef _WIN32
+#ifdef __linux__
     if (mlockall (MCL_CURRENT | MCL_FUTURE))
     {
         fprintf (stderr, "Warning: memory lock failed.\n");

@@ -9,6 +9,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Dependencies
 find_package(Jack REQUIRED)
+find_package(Threads REQUIRED)
 add_subdirectory(zita-resampler)
 if(TARGET zita-resampler)
     add_library(zita-resampler::zita-resampler ALIAS zita-resampler)
@@ -50,10 +51,11 @@ target_include_directories(zita-n2j
     ${JACK_INCLUDE_DIRS}
 )
 target_link_libraries(zita-n2j
-    PUBLIC
+    PRIVATE
+    Threads::Threads
     zita-resampler::zita-resampler
+    PUBLIC
     ${JACK_LIBRARIES}
-    pthread
 )
 
 install(TARGETS zita-j2n zita-n2j DESTINATION bin)

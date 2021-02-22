@@ -311,7 +311,7 @@ int main (int ac, char *av [])
     Arx.set_port (port_arg);
     Asy.set_port (port_arg + 1);
 
-#ifndef _WIN32
+#ifdef __linux__
     if (mlockall (MCL_CURRENT | MCL_FUTURE))
     {
         fprintf (stderr, "Warning: memory lock failed.\n");
