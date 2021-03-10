@@ -1,61 +1,63 @@
 cmake_minimum_required(VERSION 3.16.0)
-project (zita-njbridge VERSION 0.4.4)
+project(zita-njbridge VERSION 0.4.4)
 
-add_definitions( -DVERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}" )
+add_definitions(-DVERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(CMAKE_CPPFLAGS_FLAGS "${CMAKE_CPPFLAGS_FLAGS} -I. -MMD -MP")
 set(CMAKE_CXXFLAGS_FLAGS "${CMAKE_CXXFLAGS_FLAGS} -O2 -Wall")
 include(GNUInstallDirs)
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 # Dependencies
-find_package(Jack REQUIRED)
 find_package(Threads REQUIRED)
+find_package(Jack REQUIRED)
 add_subdirectory(zita-resampler)
-if(TARGET zita-resampler)
+if (TARGET zita-resampler)
     add_library(zita-resampler::zita-resampler ALIAS zita-resampler)
-else()
+else ()
     find_package(zita-resampler CONFIG REQUIRED)
-endif()
+endif ()
 
 # Source control
-set(J2N_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/source/netdata.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/jacktx.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/nettx.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/pxthread.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/lfqueue.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/zsockets.cc)
+set(J2N_SOURCES ${PROJECT_SOURCE_DIR}/source/netdata.cc
+        ${PROJECT_SOURCE_DIR}/source/jacktx.cc
+        ${PROJECT_SOURCE_DIR}/source/nettx.cc
+        ${PROJECT_SOURCE_DIR}/source/pxthread.cc
+        ${PROJECT_SOURCE_DIR}/source/lfqueue.cc
+        ${PROJECT_SOURCE_DIR}/source/zsockets.cc)
 
-set(N2J_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/source/zita-n2j.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/netdata.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/jackrx.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/netrx.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/pxthread.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/lfqueue.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/zsockets.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/source/syncrx.cc)
+set(N2J_SOURCES ${PROJECT_SOURCE_DIR}/source/zita-n2j.cc
+        ${PROJECT_SOURCE_DIR}/source/netdata.cc
+        ${PROJECT_SOURCE_DIR}/source/jackrx.cc
+        ${PROJECT_SOURCE_DIR}/source/netrx.cc
+        ${PROJECT_SOURCE_DIR}/source/pxthread.cc
+        ${PROJECT_SOURCE_DIR}/source/lfqueue.cc
+        ${PROJECT_SOURCE_DIR}/source/zsockets.cc
+        ${PROJECT_SOURCE_DIR}/source/syncrx.cc)
 
-add_executable( zita-j2n ${CMAKE_CURRENT_SOURCE_DIR}/source/zita-j2n.cc ${J2N_SOURCES} )
-add_executable( zita-n2j ${CMAKE_CURRENT_SOURCE_DIR}/source/zita-n2j.cc ${N2J_SOURCES} )
+add_executable(zita-j2n ${PROJECT_SOURCE_DIR}/source/zita-j2n.cc ${J2N_SOURCES})
+add_executable(zita-n2j ${PROJECT_SOURCE_DIR}/source/zita-n2j.cc ${N2J_SOURCES})
 target_include_directories(zita-j2n
-    PUBLIC
-    ${JACK_INCLUDE_DIRS}
-)
+        PUBLIC
+        ${JACK_INCLUDE_DIRS}
+        )
 target_link_libraries(zita-j2n
-    PUBLIC
-    ${JACK_LIBRARIES}
-    pthread
-)
+        PRIVATE
+        Threads::Threads
+        PUBLIC
+        ${JACK_LIBRARIES}
+        )
 target_include_directories(zita-n2j
-    PUBLIC
-    zita-resampler/source
-    ${JACK_INCLUDE_DIRS}
-)
+        PRIVATE
+        zita-resampler/source
+        ${JACK_INCLUDE_DIRS}
+        )
 target_link_libraries(zita-n2j
-    PRIVATE
-    Threads::Threads
-    zita-resampler::zita-resampler
-    PUBLIC
-    ${JACK_LIBRARIES}
-)
+        PRIVATE
+        Threads::Threads
+        PUBLIC
+        zita-resampler::zita-resampler
+        ${JACK_LIBRARIES}
+        )
 
 install(TARGETS zita-j2n zita-n2j DESTINATION bin)
